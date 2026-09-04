@@ -93,9 +93,19 @@
                 <p class="text-caption text-ink-subtle">
                     ResQNet — Offline Emergency Communication System
                 </p>
-                <p class="text-caption text-ink-subtle tabular">
-                    Gateway <span id="footer-host">—</span>
-                </p>
+                <div class="flex flex-wrap items-center gap-3">
+                    <span id="clear-data-msg" class="text-caption text-ink-subtle"></span>
+                    <!-- Cached reports contain personal data. Shared field devices
+                         need a way to wipe it. -->
+                    <button type="button" id="clear-data"
+                            class="text-caption text-ink-subtle underline underline-offset-2
+                                   hover:text-ink transition-colors">
+                        Clear cached data on this device
+                    </button>
+                    <span class="text-caption text-ink-subtle tabular">
+                        Gateway <span id="footer-host">—</span>
+                    </span>
+                </div>
             </div>
         </footer>
     </div>

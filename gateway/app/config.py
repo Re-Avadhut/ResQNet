@@ -3,6 +3,9 @@
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+#: Sentinel value. If settings.secret_key still equals this, no real key was set.
+INSECURE_DEFAULT_SECRET_KEY = "your-secret-key-change-this"
+
 
 class Settings(BaseSettings):
     """Application settings loaded from environment."""
@@ -19,8 +22,12 @@ class Settings(BaseSettings):
     heartbeat_interval_seconds: int = 10
     max_nodes: int = 50
 
-    # Security
-    secret_key: str = "your-secret-key-change-this"
+    # Security.
+    # This default is PUBLIC - it is committed to the repository. Anything
+    # that ever signs tokens or sessions with it is trivially forgeable, so
+    # a real deployment must override it in gateway/.env. main.py warns
+    # loudly at startup while this placeholder is still in use.
+    secret_key: str = INSECURE_DEFAULT_SECRET_KEY
 
     # Optional external services
     gps_provider: str = "mock"

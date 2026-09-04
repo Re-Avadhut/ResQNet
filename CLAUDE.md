@@ -514,3 +514,62 @@ no code change. Only include the zoom levels and region you actually need — ti
 packs grow very quickly.
 
 ---
+
+---
+
+## 12. Security and sensitive data
+
+This app will hold **real personal data about people in an emergency**: names,
+phone numbers, GPS positions, photographs, and missing-person records. Treat it
+accordingly.
+
+### What must never enter Git
+
+`.gitignore` covers all of this, but know *why*:
+
+| Never commit | Why |
+| --- | --- |
+| `gateway/.env` | Real config and secrets. Everyone makes their own from `.env.example`. |
+| `*.db`, `*.sqlite`, `*.sql`, `backups/` | The database holds victim data once in use. |
+| `uploads/` | Photographs of people. |
+| `*.pem`, `*.key`, `*.crt`, `id_rsa*` | Private keys and certificates. |
+| `frontend/assets/tiles/` | Not secret, but tile packs run to gigabytes. |
+
+**If you ever commit a secret by accident, say so immediately.** Deleting it in
+a later commit does *not* remove it — it stays in the history forever, and the
+fix is to rotate the secret. Speed matters more than embarrassment.
+
+Verified on 2026-09-04: `.env` has never been committed in any commit on any
+branch, and nothing sensitive is currently tracked.
+
+### Known posture (all deliberate for now)
+
+| Item | State | Before real deployment |
+| --- | --- | --- |
+| Authentication | None at all | Decide who may file and read reports |
+| `SECRET_KEY` | Public placeholder; app warns at startup | Set a real value in `gateway/.env` |
+| CORS | `allow_origins=["*"]` | Restrict to the gateway's own origin |
+| Transport | Plain HTTP | Fine on an isolated LAN; not over the internet |
+| `/docs` | Publicly readable | Fine on a field LAN; disable if exposed |
+| Uploads | Not implemented | Validate type and size; never trust a filename |
+
+None of these are bugs — `docs/api.md` states the no-auth decision explicitly.
+They are listed so the choice stays *conscious* rather than forgotten.
+
+### Personal data on the device
+
+The PWA stores cached reports and queued submissions in the browser's local
+storage so it can work offline. On a shared base-camp tablet that accumulates.
+
+There is a **"Clear cached data on this device"** control in the footer. It
+deliberately **refuses to run while unsent reports are still queued** — losing
+an undelivered SOS is far worse than leaving data on a device.
+
+### The deploy script
+
+`scripts/deploy.sh` excludes the database, uploads, `.env` and virtualenvs from
+the transfer, and shows a dry run before doing anything.
+
+**Do not remove entries from its exclude list.** The original version would have
+copied the developer's local `resqnet.db` over the gateway's, destroying live
+SOS and missing-person records on every deploy.

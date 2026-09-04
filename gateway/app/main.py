@@ -6,6 +6,7 @@ Run from the REPOSITORY ROOT (not from inside gateway/):
     uvicorn gateway.app.main:app --reload   # dev run with auto-reload
 """
 
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -13,7 +14,7 @@ from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from gateway.app.config import get_settings
+from gateway.app.config import get_settings, INSECURE_DEFAULT_SECRET_KEY
 from gateway.app.database import create_tables
 from gateway.app import models  # noqa: F401 - registers all tables on Base
 from gateway.app import routes
@@ -32,6 +33,16 @@ async def lifespan(app: FastAPI):
     should be replaced with real migrations (Alembic).
     """
     create_tables()
+
+    # Fail loudly rather than silently running on a key that is published in
+    # the repository. Only a warning for now because nothing signs anything
+    # yet - promote this to a hard startup failure the moment auth is added.
+    if settings.secret_key == INSECURE_DEFAULT_SECRET_KEY:
+        logging.getLogger("resqnet").warning(
+            "SECRET_KEY is still the public placeholder from .env.example. "
+            "Set a real value in gateway/.env before any real deployment."
+        )
+
     yield
 
 
@@ -102,6 +113,11 @@ async def websocket_sync(websocket: WebSocket):
 
 # Serve the PWA. This mount is LAST on purpose: FastAPI matches routes in the
 # order they were added, so /api/v1/* and /ws/sync still win over the catch-all.
+#
+# CAVEAT: because this is a catch-all, it also swallows API paths that do not
+# match a route exactly - including the trailing-slash redirect FastAPI would
+# normally issue. That is why list endpoints register both "" and "/".
+# If you add a new list endpoint, do the same or its documented URL will 404.
 if FRONTEND_DIR.is_dir():
     app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 

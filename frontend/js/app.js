@@ -400,6 +400,47 @@
 
     window.addEventListener('hashchange', handleRoute);
 
+    /* ── Local data control ─────────────────────────────────────────── */
+
+    /* Cached API responses contain personal data — names, contacts and GPS
+       positions of people in an emergency. On a shared base-camp tablet that
+       accumulates indefinitely, so there has to be a way to wipe it.
+
+       Queued-but-unsent reports are deliberately NOT cleared: destroying an
+       unsent SOS is far worse than leaving data on the device. The caller is
+       told to reconnect and flush first. */
+    function clearLocalData() {
+        const pending = outbox.count();
+        if (pending > 0) {
+            return {
+                cleared: false,
+                pending,
+                message: `${pending} report(s) still waiting to send. Reconnect `
+                    + 'so they can be delivered before clearing this device.',
+            };
+        }
+
+        let removed = 0;
+        try {
+            Object.keys(window.localStorage)
+                .filter((key) => key.startsWith(CACHE_PREFIX))
+                .forEach((key) => { window.localStorage.removeItem(key); removed += 1; });
+        } catch (err) {
+            return { cleared: false, pending: 0, message: 'Storage is unavailable on this device.' };
+        }
+
+        /* Cached API responses also live in the service worker's cache. */
+        if ('caches' in window) {
+            caches.keys()
+                .then((names) => Promise.all(
+                    names.filter((n) => n.startsWith('resqnet-data-')).map((n) => caches.delete(n))
+                ))
+                .catch(() => { /* best effort */ });
+        }
+
+        return { cleared: true, pending: 0, message: `Cleared ${removed} cached record set(s).` };
+    }
+
     /* ── Public surface for page modules ────────────────────────────── */
 
     window.ResQNet = {
@@ -407,6 +448,7 @@
         outbox,
         connection,
         loadAsset,
+        clearLocalData,
         escapeHtml,
         pageHeader,
         staleNotice,
@@ -420,6 +462,19 @@
     function boot() {
         const host = document.getElementById('footer-host');
         if (host) host.textContent = window.location.host || 'local';
+
+        const clearBtn = document.getElementById('clear-data');
+        const clearMsg = document.getElementById('clear-data-msg');
+        if (clearBtn && clearMsg) {
+            clearBtn.addEventListener('click', () => {
+                const result = clearLocalData();
+                clearMsg.textContent = result.message;
+                clearMsg.className = result.cleared
+                    ? 'text-caption text-rescue-400'
+                    : 'text-caption text-warning-400';
+                if (result.cleared) handleRoute();
+            });
+        }
 
         if (!window.location.hash) {
             window.location.replace(`#/${DEFAULT_PAGE}`);
