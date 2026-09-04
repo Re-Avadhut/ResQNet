@@ -24,6 +24,7 @@ An offline-first emergency communication system for disaster zones, built on Ras
 ## Quick Start
 
 ### Gateway (Raspberry Pi 4)
+
 ```bash
 cd gateway
 cp .env.example .env
@@ -33,6 +34,7 @@ python -m app.main
 ```
 
 ### Firmware (ESP32-WROOM)
+
 ```bash
 cd firmware
 idf.py build flash monitor
@@ -40,6 +42,7 @@ idf.py build flash monitor
 ```
 
 ### Frontend Development
+
 ```bash
 cd frontend
 # No build step needed — vanilla JS + Tailwind via CDN
