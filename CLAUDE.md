@@ -59,9 +59,9 @@ so the whole team can follow what happened and why, without reading diffs.
 | Database | **SQLAlchemy 2.0** + **SQLite** | Postgres is the future migration path |
 | Config | **pydantic-settings** | Reads `gateway/.env` |
 | Server | **uvicorn** | ASGI server |
-| Frontend | **Vanilla JavaScript** (ES modules) | No React, no Vue, no build step |
-| Styling | **TailwindCSS** (CDN for now) | Custom colours defined in `index.html` |
-| Maps | **Leaflet 1.9.4** | Offline tiles planned |
+| Frontend | **Vanilla JavaScript** (ES modules) | No React, no Vue |
+| Styling | **TailwindCSS 3.4** (compiled) | Tokens in `tailwind.config.js`; see [Section 10](#10-styling-and-the-css-build) |
+| Maps | **Leaflet 1.9.4** (vendored) | `frontend/vendor/leaflet/` — never a CDN |
 | Offline | **Service Worker + PWA manifest** | `frontend/service-worker.js` |
 | Tests | **pytest** + **httpx** | `tests/` |
 | Firmware | ESP-IDF 5.x (C) | **Not our scope** — see R2 |
@@ -261,10 +261,10 @@ new shape.
 | Test suite runs | ✅ 11 tests pass |
 | API endpoint **logic** | ❌ All stubs — return fake empty data |
 | Database reads/writes from endpoints | ❌ Not connected at all |
-| Frontend pages | ❌ Static HTML, no data loading |
+| Frontend pages | ✅ Built, wired to the API, degrade gracefully offline |
+| True offline capability | ✅ Zero external requests; verified in a real browser |
+| Offline submission queue | ✅ SOS reports survive being filed with no connection |
 | WebSocket `/ws/sync` | ❌ Accepts connections, does nothing |
-| Service worker offline caching | ⚠️ Installs correctly now, strategy not implemented |
-| True offline capability | ❌ Blocked — Tailwind + Leaflet still load from a CDN |
 
 ---
 
@@ -317,45 +317,111 @@ independently prevented it from running:
 **Deliberately not touched:** everything in `firmware/` (rule R2). Issues were
 found there and are recorded in Section 8 for the hardware team.
 
+### 2026-09-04 — Session 2: true offline support + UI
+
+**Goal: the app must work perfectly with no internet at all.** It previously
+loaded Tailwind and Leaflet from CDNs, so in a real disaster zone it would have
+rendered as unstyled text with no map.
+
+**Removed every external dependency**
+
+- Leaflet 1.9.4 vendored into `frontend/vendor/leaflet/` — including the marker
+  images, which are the part people forget and which break every map pin.
+- Tailwind is now **compiled** rather than loaded from the CDN. The CDN build is
+  a ~400KB script that compiles CSS *in the browser on every page load*; the
+  compiled stylesheet is **22KB**. See [Section 10](#10-styling-and-the-css-build).
+- Chose Tailwind **v3, not v4**, on purpose: v4 requires Chrome 111+ / Safari
+  16.4+. This app has to run on whatever cheap phone shows up in a disaster zone.
+- Fonts are the system stack. A webfont is one more thing to vendor and one more
+  thing to fail.
+- **Verified in a real browser: zero external requests, zero console errors.**
+
+**Offline behaviour**
+
+- Service worker rewritten with a strategy per request type — network-first for
+  navigation and API reads, cache-first for static assets and map tiles,
+  mutations never cached. Shell assets are cached individually rather than with
+  `addAll()`, so one missing file can no longer kill offline support outright.
+- **Outbox:** an SOS filed with no connection is stored on the device and sent
+  automatically when the gateway comes back. Nothing typed is ever lost.
+- Added `GET /api/v1/health` so the app can tell that the *gateway* is down.
+  `navigator.onLine` only reports whether the device has a network at all — a
+  phone joined to the node's Wi-Fi with the Pi switched off still reports
+  "online".
+- **Fixed a subtle but serious bug found during testing:** the service worker
+  serves cached API responses that are indistinguishable from live ones, so the
+  app displayed "Connected" and showed stale figures as current while the
+  gateway was actually dead. The worker now tags cached responses with an
+  `X-ResQNet-From-Cache` header and the UI reports staleness honestly.
+
+**UI**
+
+- Rebuilt on a design system adapted from Linear: dark canvas, hairline borders,
+  tight negative tracking on headings, 4/8/12/16/24/32/48 spacing rhythm.
+  Tokens live in `tailwind.config.js` — do not scatter raw hex codes.
+- **Dark theme is a functional choice**, not a stylistic one: night operations,
+  and OLED battery savings when power is scarce.
+- **Red is reserved exclusively for emergency semantics.** Navigation and primary
+  actions use signal blue. If red is used decoratively it stops reading as an
+  alarm. Please keep this rule.
+- All five pages rebuilt and wired to the real API, with genuine loading,
+  empty, error and stale states. The numbers shown are read from the gateway —
+  they are not hardcoded, they are zero because the endpoints are still stubs.
+- Accessibility: 44px minimum touch targets, 16px form text (smaller zooms iOS
+  Safari on focus), visible focus rings, skip link, `aria-current` on the active
+  nav item, live regions on status messages, and `prefers-reduced-motion` honoured.
+- Generated the missing PWA icons, so the app can now be installed to a home
+  screen. `manifest.json` previously pointed at two files that did not exist.
+
+**Verified end to end in a real browser (Playwright)**
+
+| Check | Result |
+| --- | --- |
+| External network requests | none |
+| Console errors | none |
+| Reload with the gateway killed | app still loads and renders |
+| Offline SOS submission | queued on device, not lost |
+| Reconnect | queue flushed automatically |
+| Map markers, popups, layer toggles | working |
+| Backend tests | 13 passing |
+
+Also fixed: the map's zoom controls stayed light-themed because `leaflet.css` is
+loaded lazily and therefore landed *after* our stylesheet, winning on source
+order. The dark overrides are now scoped to raise their specificity.
+
 ---
 
 ## 8. Known issues not yet fixed
 
 ### Needs a decision from Sumanth
 
-1. **The PWA is not actually offline-capable.** Tailwind and Leaflet load from
-   `cdn.tailwindcss.com` and `unpkg.com`. In a disaster zone with no internet the
-   app would render unstyled and the map would not load at all — which defeats the
-   entire premise of the project. **Fix:** download both into `frontend/vendor/`
-   and reference them locally. This is the highest-impact remaining issue.
-   *Not done yet because it adds vendored files and edits `index.html` — needs a yes.*
+1. **Offline map imagery.** The map has no raster tiles. Bulk-downloading them
+   from the public OpenStreetMap servers is forbidden by their tile usage policy,
+   and a worldwide pack would be enormous, so a deployment generates a pack for
+   its own operating area. See [Section 11](#11-offline-map-tiles). Until then
+   the map still plots markers and coordinates over a grid backdrop.
 
-2. **PWA app icons are missing.** `manifest.json` points at `/assets/icon-192.png`
-   and `/assets/icon-512.png`, neither of which exists, so the app cannot be
-   installed to a phone home screen. Needs either a logo from the team or a
-   generated placeholder.
-
-3. **No `LICENSE` file** even though `README.md` states MIT. That is the repo
+2. **No `LICENSE` file** even though `README.md` states MIT. That is the repo
    owner's call, not ours.
 
-4. **No authentication anywhere**, by design for now — `docs/api.md` says so
+3. **No authentication anywhere**, by design for now — `docs/api.md` says so
    explicitly. Worth a conscious decision before this is ever deployed publicly.
 
 ### Flagged for the hardware/ECE team — do not fix (R2)
 
-5. `firmware/sdkconfig.defaults` sets `CONFIG_WIFI_SSID` and
+4. `firmware/sdkconfig.defaults` sets `CONFIG_WIFI_SSID` and
    `CONFIG_WIFI_PASSWORD`, which are not real ESP-IDF options without a
    `Kconfig.projbuild` file (missing). They will be **silently ignored**.
-6. The same file uses `CONFIG_ESP32_WIFI_*` names, which are the pre-5.x spelling
+5. The same file uses `CONFIG_ESP32_WIFI_*` names, which are the pre-5.x spelling
    (now `CONFIG_ESP_WIFI_*`) — this contradicts the stated ESP-IDF 5.x target.
-7. The Wi-Fi AP password is hardcoded as `resqnet123`.
-8. `firmware/main/main.c` calls `esp_netif_init()` without including `esp_netif.h`.
+6. The Wi-Fi AP password is hardcoded as `resqnet123`.
+7. `firmware/main/main.c` calls `esp_netif_init()` without including `esp_netif.h`.
 
 ### Lower priority
 
-9. `docs/architecture.md` claims a `gateway/app/websocket/` directory exists. It
+8. `docs/architecture.md` claims a `gateway/app/websocket/` directory exists. It
    does not — the WebSocket handler lives in `main.py`.
-10. Tests only assert the shape of stub responses. They will need real assertions
+9. Tests only assert the shape of stub responses. They will need real assertions
     as endpoints get implemented.
 
 ---
@@ -385,3 +451,66 @@ For frontend/UI work later there are design skills installed (Tailwind-aware
 design systems, UI review, accessibility auditing) that can raise the quality of
 the PWA considerably. Per **R1**, these will always be named and permission asked
 before use — never invoked silently.
+
+---
+
+## 10. Styling and the CSS build
+
+**`frontend/css/tailwind.css` is generated. Never edit it by hand.**
+
+```
+tailwind.config.js        ← design tokens (colours, type scale, spacing)
+frontend/css/tailwind.src.css  ← source: @tailwind directives + component classes
+        ↓  npm run build:css
+frontend/css/tailwind.css      ← generated, and COMMITTED to Git
+frontend/css/styles.css        ← hand-written; Leaflet overrides + offline banner
+```
+
+**You do not need Node to run the app.** The compiled CSS is committed, so a
+teammate can clone and run with Python alone.
+
+**You need Node only when you add a new Tailwind class**, because Tailwind only
+includes classes it can actually see in the source:
+
+```bash
+npm install          # once
+npm run build:css    # after adding classes
+npm run watch:css    # or leave this running while working on UI
+```
+
+If you add a class and the styling does not appear, you forgot to rebuild.
+That is the single most likely cause.
+
+### Rules for UI work
+
+1. **Never add a CDN link or a webfont.** Vendor it into `frontend/vendor/`
+   instead. The whole point is that this works with no internet.
+2. **Use the design tokens**, not raw hex. `text-ink-muted`, not `#a8b0bd`.
+3. **Red means emergency.** Use `accent` (blue) for ordinary actions.
+4. **Keep touch targets at 44px** and form text at 16px.
+5. **After changing UI, run `npm run build:css`** before you commit.
+
+---
+
+## 11. Offline map tiles
+
+The map works without imagery — markers, coordinates, zoom and pan are all
+functional over a grid backdrop — but a real deployment wants actual maps.
+
+**Do not bulk-download from the public OpenStreetMap tile servers.** It is
+explicitly against their tile usage policy and will get the IP blocked. Generate
+a pack for your operating area instead, with a tool such as TileMill,
+`mbutil`, or a self-hosted renderer.
+
+Drop the result here:
+
+```
+frontend/assets/tiles/{z}/{x}/{y}.png
+```
+
+The gateway detects the directory automatically and reports it via
+`/api/v1/health`, and the map switches from the grid backdrop to real tiles with
+no code change. Only include the zoom levels and region you actually need — tile
+packs grow very quickly.
+
+---

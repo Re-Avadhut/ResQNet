@@ -2,60 +2,115 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#059669">
-    <meta name="description" content="ResQNet - Disaster Operating Platform">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0b0d">
+    <meta name="description" content="ResQNet - Offline Disaster Operating Platform">
+    <meta name="color-scheme" content="dark">
+
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png">
+    <link rel="apple-touch-icon" href="/assets/icon-192.png">
     <link rel="manifest" href="/manifest.json">
+
     <title>ResQNet</title>
-    <!-- TODO(offline): Tailwind + Leaflet load from a CDN, so the PWA is not
-         truly offline-capable yet. Both must be vendored into frontend/vendor/. -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        // Shade scales are required: Tailwind only generates
-                        // classes for keys that exist, so a flat value would
-                        // make bg-emergency-600 a no-op class.
-                        emergency: { 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' },
-                        rescue:    { 500: '#10b981', 600: '#059669', 700: '#047857' },
-                        warning:   { 500: '#f59e0b', 600: '#d97706', 700: '#b45309' },
-                        info:      { 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }
-                    }
-                }
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- NO CDNs ANYWHERE IN THIS FILE, BY DESIGN.
+         This app has to work in a disaster zone with no internet at all. Every
+         stylesheet, script, font and image is served from this gateway. If you
+         are about to add a <script src="https://..."> or a Google Font: don't.
+         Vendor it into frontend/vendor/ instead. See CLAUDE.md section 2. -->
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="bg-gray-50 text-gray-900">
-    <header class="bg-emergency-600 text-white p-4 shadow-md">
-        <h1 class="text-2xl font-bold">ResQNet</h1>
-        <p class="text-sm">Disaster Operating Platform</p>
-    </header>
-    
-    <nav class="bg-white border-b border-gray-200 p-4 flex gap-4">
-        <a href="javascript:void(0)" onclick="loadPage('dashboard')" class="text-blue-600 hover:text-blue-800 font-medium">Dashboard</a>
-        <a href="javascript:void(0)" onclick="loadPage('sos')" class="text-gray-600 hover:text-gray-800 font-medium">SOS</a>
-        <a href="javascript:void(0)" onclick="loadPage('missing-persons')" class="text-gray-600 hover:text-gray-800 font-medium">Missing Persons</a>
-        <a href="javascript:void(0)" onclick="loadPage('volunteer')" class="text-gray-600 hover:text-gray-800 font-medium">Volunteers</a>
-        <a href="javascript:void(0)" onclick="loadPage('map')" class="text-gray-600 hover:text-gray-800 font-medium">Map</a>
-    </nav>
-    
-    <main id="app-content" class="p-4">
-        <!-- Dynamic content will be loaded here -->
-        <div id="welcome-message" class="text-center py-8">
-            <h2 class="text-xl font-semibold mb-4">Welcome to ResQNet</h2>
-            <p class="text-gray-600">Select a section above to begin.</p>
-        </div>
-    </main>
-    
-    <footer class="bg-gray-100 p-4 text-center text-gray-600 text-sm">
-        <p>ResQNet - Offline Emergency Communication System</p>
-    </footer>
-    
+<body>
+    <a href="#app-content" class="skip-link">Skip to main content</a>
+
+    <div class="min-h-screen flex flex-col">
+
+        <!-- ── Header ───────────────────────────────────────────────── -->
+        <header class="border-b border-hairline bg-surface-1/80 backdrop-blur sticky top-0 z-20">
+            <div class="mx-auto w-full max-w-7xl px-4 sm:px-6">
+                <div class="flex items-center justify-between h-16 gap-4">
+
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span class="grid place-items-center w-9 h-9 rounded-md bg-emergency-500 shrink-0"
+                              aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                 stroke="white" stroke-width="2.5" stroke-linecap="round">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                        </span>
+                        <div class="min-w-0">
+                            <h1 class="text-title text-ink leading-none">ResQNet</h1>
+                            <p class="text-caption text-ink-subtle mt-0.5 truncate">
+                                Disaster Operating Platform
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Live connection state. Updated by app.js. -->
+                    <div id="connection-status"
+                         class="pill-neutral shrink-0"
+                         role="status"
+                         aria-live="polite">
+                        <span id="connection-dot"
+                              class="w-1.5 h-1.5 rounded-full bg-ink-subtle"
+                              aria-hidden="true"></span>
+                        <span id="connection-label">Checking</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ── Navigation ───────────────────────────────────────────── -->
+        <nav class="border-b border-hairline bg-canvas sticky top-16 z-10"
+             aria-label="Primary">
+            <div class="mx-auto w-full max-w-7xl px-4 sm:px-6">
+                <!-- Horizontal scroll rather than wrapping: keeps the nav one
+                     predictable row on a 360px-wide phone. -->
+                <ul id="main-nav" class="flex gap-1 overflow-x-auto no-scrollbar -mb-px">
+                    <li><a href="#/dashboard"        data-page="dashboard"        class="nav-link">Dashboard</a></li>
+                    <li><a href="#/sos"              data-page="sos"              class="nav-link">SOS</a></li>
+                    <li><a href="#/missing-persons"  data-page="missing-persons"  class="nav-link">Missing Persons</a></li>
+                    <li><a href="#/volunteer"        data-page="volunteer"        class="nav-link">Volunteers</a></li>
+                    <li><a href="#/map"              data-page="map"              class="nav-link">Map</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- ── Content ──────────────────────────────────────────────── -->
+        <main id="app-content"
+              class="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 sm:py-8"
+              tabindex="-1">
+            <div class="text-center py-16">
+                <p class="text-ink-subtle">Loading…</p>
+            </div>
+        </main>
+
+        <!-- ── Footer ───────────────────────────────────────────────── -->
+        <footer class="border-t border-hairline mt-auto">
+            <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6
+                        flex flex-wrap items-center justify-between gap-2">
+                <p class="text-caption text-ink-subtle">
+                    ResQNet — Offline Emergency Communication System
+                </p>
+                <p class="text-caption text-ink-subtle tabular">
+                    Gateway <span id="footer-host">—</span>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Offline banner. Shown by app.js when the gateway is unreachable. -->
+    <div id="offline-indicator" role="status" aria-live="polite">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M5 12.9a10 10 0 0 1 4-2.6M1.4 9.3a15 15 0 0 1 5-3.3"/>
+            <path d="M22.6 9.3A15 15 0 0 0 12 5"/>
+            <circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+        <span>Offline — showing last known data</span>
+    </div>
+
     <script src="/js/app.js"></script>
 </body>
 </html>

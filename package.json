@@ -1,0 +1,13 @@
+{
+  "name": "resqnet-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Build tooling for the ResQNet PWA. Only needed to rebuild CSS.",
+  "scripts": {
+    "build:css": "tailwindcss -i frontend/css/tailwind.src.css -o frontend/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i frontend/css/tailwind.src.css -o frontend/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

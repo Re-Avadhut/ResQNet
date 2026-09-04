@@ -61,6 +61,26 @@ app.include_router(routes.messaging.router, prefix="/api/v1/messages", tags=["me
 app.include_router(routes.dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
 
 
+@app.get("/api/v1/health", tags=["health"])
+async def health():
+    """Liveness probe used by the PWA to detect whether the gateway is up.
+
+    The browser's navigator.onLine only reports whether the device has *a*
+    network connection. A phone can be joined to the node's Wi-Fi with the Pi
+    powered off and still report "online", so the PWA checks this instead.
+    Keep it cheap: it is polled every 20 seconds by every connected client.
+    """
+    return {
+        "status": "ok",
+        "service": "resqnet-gateway",
+        "version": app.version,
+        # Lets the map decide whether to add a tile layer at all. Probing
+        # for a tile directly would log a 404 in the console on every
+        # deployment that has no pack installed, which is most of them.
+        "tiles_available": (FRONTEND_DIR / "assets" / "tiles").is_dir(),
+    }
+
+
 # WebSocket for real-time sync
 @app.websocket("/ws/sync")
 async def websocket_sync(websocket: WebSocket):

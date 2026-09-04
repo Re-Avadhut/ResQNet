@@ -24,13 +24,17 @@ htmlcov/
 
 # Node / Frontend build artifacts
 node_modules/
-package-lock.json
 yarn.lock
+# NOTE: package-lock.json IS committed. It pins the exact Tailwind version so
+# everyone's `npm run build:css` produces identical CSS.
 *.min.js
 *.min.css
 
 # Tailwind
-frontend/css/tailwind.css
+# NOTE: frontend/css/tailwind.css is deliberately COMMITTED, not ignored.
+# It is the compiled stylesheet the app actually loads. Committing it means a
+# teammate can clone and run the app without installing Node at all - the
+# build is only needed when you add new Tailwind classes.
 frontend/css/output.css
 
 # ESP-IDF

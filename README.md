@@ -18,7 +18,7 @@ An offline-first emergency communication system for disaster zones, built on Ras
 
 - **Gateway**: FastAPI + SQLite, hosts offline PWA
 - **Firmware**: ESP-IDF (C), Wi-Fi captive portal + dynamic capability descriptor
-- **Frontend**: HTML5 + TailwindCSS + vanilla JS PWA (served by gateway)
+- **Frontend**: Vanilla JS PWA, compiled Tailwind, vendored Leaflet — zero CDNs, fully offline
 - **Capability-based**: Gateway builds dashboard from whatever capabilities nodes report
 
 ## Quick Start
@@ -52,11 +52,23 @@ idf.py build flash monitor
 
 ### Frontend Development
 
-No build step — vanilla JS + Tailwind via CDN.
+**Fully offline — there are no CDN dependencies.** Tailwind is compiled to a
+committed stylesheet and Leaflet is vendored into `frontend/vendor/`, so the app
+works with no internet at all.
 
 The frontend uses **absolute paths** (`/js/app.js`, `/manifest.json`), so it must be
 opened through the gateway at `http://localhost:8000/`. Opening `frontend/index.html`
 directly from the filesystem will not load correctly.
+
+You do **not** need Node to run the app. It is required only to rebuild the CSS
+after adding new Tailwind classes:
+
+```bash
+npm install
+npm run build:css     # or: npm run watch:css
+```
+
+See [CLAUDE.md § 10](CLAUDE.md) for the styling rules.
 
 ### Tests
 
