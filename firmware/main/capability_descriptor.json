@@ -1,0 +1,10 @@
+{
+  "protocol_version": "1.0",
+  "node_id": "NODE-01",
+  "modules": [
+    {
+      "module": "GPS",
+      "capabilities": ["location", "speed", "altitude", "timestamp"]
+    }
+  ]
+}

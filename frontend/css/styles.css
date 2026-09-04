@@ -1,0 +1,36 @@
+/* ResQNet Frontend Styles */
+
+/* TailwindCSS via CDN handles most styling */
+
+/* Custom styles for offline-first PWA */
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Offline indicator */
+.offline-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #dc2626;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    display: none;
+    z-index: 1000;
+}
+
+.offline .offline-indicator {
+    display: block;
+}
+
+/* Map container */
+#map {
+    min-height: 400px;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+}
