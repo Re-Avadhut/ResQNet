@@ -16,9 +16,13 @@ const PAGES = {
 };
 
 const API_BASE_URL = '/api/v1';
-const WS_URL = `ws://${window.location.host}/ws/sync`;
+// Use wss:// automatically when the page is served over HTTPS.
+const WS_PROTOCOL = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const WS_URL = `${WS_PROTOCOL}//${window.location.host}/ws/sync`;
 
-// Page loader - called from nav links
+// Page loader - called from the inline onclick handlers in index.html,
+// so it must stay a global function declaration (do not convert app.js
+// to type="module" without rewiring the nav).
 async function loadPage(pageName) {
     const content = document.getElementById('app-content');
     content.innerHTML = '<div class="text-center py-4">Loading...</div>';

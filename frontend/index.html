@@ -5,19 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#059669">
     <meta name="description" content="ResQNet - Disaster Operating Platform">
-    <link rel="icon" href="/favicon.ico">
     <link rel="manifest" href="/manifest.json">
     <title>ResQNet</title>
+    <!-- TODO(offline): Tailwind + Leaflet load from a CDN, so the PWA is not
+         truly offline-capable yet. Both must be vendored into frontend/vendor/. -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'emergency': '#dc2626',
-                        'rescue': '#059669',
-                        'warning': '#d97706',
-                        'info': '#3b82f6'
+                        // Shade scales are required: Tailwind only generates
+                        // classes for keys that exist, so a flat value would
+                        // make bg-emergency-600 a no-op class.
+                        emergency: { 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' },
+                        rescue:    { 500: '#10b981', 600: '#059669', 700: '#047857' },
+                        warning:   { 500: '#f59e0b', 600: '#d97706', 700: '#b45309' },
+                        info:      { 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }
                     }
                 }
             }

@@ -23,7 +23,7 @@ class SOSReport(Base):
     photo_url = Column(String(255), nullable=True)  # Path to uploaded photo
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     resolved_at = Column(DateTime, nullable=True)
-    metadata = Column(JSON, nullable=True)  # Additional context
+    extra_data = Column("metadata", JSON, nullable=True)  # Additional context
 
     # Relationships
     node = relationship("Node", back_populates="sos_reports")

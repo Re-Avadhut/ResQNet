@@ -1,26 +1,56 @@
-"""ResQNet Gateway Application."""
+"""ResQNet Gateway Application.
+
+Run from the REPOSITORY ROOT (not from inside gateway/):
+
+    python -m gateway.app.main              # simple run
+    uvicorn gateway.app.main:app --reload   # dev run with auto-reload
+"""
+
+from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
-from gateway.app.config import Settings
-from gateway.app.database import engine, Base
+from gateway.app.config import get_settings
+from gateway.app.database import create_tables
+from gateway.app import models  # noqa: F401 - registers all tables on Base
 from gateway.app import routes
 
-# Create database tables on startup
-# Base.metadata.create_all(bind=engine)  # In production, use migrations
+settings = get_settings()
+
+# Repository root -> gateway/app/main.py has parents: [0]=app, [1]=gateway, [2]=repo root
+FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Create database tables on startup.
+
+    Fine while the schema is still moving. Once the schema stabilises this
+    should be replaced with real migrations (Alembic).
+    """
+    create_tables()
+    yield
+
 
 app = FastAPI(
     title="ResQNet Gateway",
     description="Disaster operating platform - Raspberry Pi gateway for emergency communications",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # Middleware
-app.add_middleware(CORSMiddleware,
+# NOTE: allow_credentials must stay False while allow_origins is ["*"] —
+# browsers reject that combination outright.
+app.add_middleware(
+    CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "WS", "OPTIONS"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 # Routes
@@ -30,12 +60,15 @@ app.include_router(routes.sos.router, prefix="/api/v1/sos", tags=["sos"])
 app.include_router(routes.messaging.router, prefix="/api/v1/messages", tags=["messaging"])
 app.include_router(routes.dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
 
+
 # WebSocket for real-time sync
 @app.websocket("/ws/sync")
 async def websocket_sync(websocket: WebSocket):
-    """WebSocket endpoint for heartbeat and sync with rescue nodes."""
+    """WebSocket endpoint for heartbeat and sync with rescue nodes.
+
+    TODO: Implement heartbeat / sync_request handling (see docs/api.md).
+    """
     await websocket.accept()
-    # Handle connection lifecycle
     try:
         while True:
             data = await websocket.receive_text()
@@ -45,3 +78,20 @@ async def websocket_sync(websocket: WebSocket):
         pass
     finally:
         await websocket.close()
+
+
+# Serve the PWA. This mount is LAST on purpose: FastAPI matches routes in the
+# order they were added, so /api/v1/* and /ws/sync still win over the catch-all.
+if FRONTEND_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+
+
+def main() -> None:
+    """Entry point for `python -m gateway.app.main`."""
+    import uvicorn
+
+    uvicorn.run(app, host=settings.host, port=settings.port)
+
+
+if __name__ == "__main__":
+    main()

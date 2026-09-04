@@ -25,12 +25,21 @@ An offline-first emergency communication system for disaster zones, built on Ras
 
 ### Gateway (Raspberry Pi 4)
 
+Run every command from the **repository root**, not from inside `gateway/`:
+
 ```bash
-cd gateway
-cp .env.example .env
-pip install -r requirements.txt
-python -m app.main
-# Serves on http://localhost:8000 (API) and PWA at /
+cp gateway/.env.example gateway/.env
+pip install -r gateway/requirements.txt
+python -m gateway.app.main
+# API  -> http://localhost:8000/api/v1
+# PWA  -> http://localhost:8000/
+# Docs -> http://localhost:8000/docs
+```
+
+For development with auto-reload:
+
+```bash
+uvicorn gateway.app.main:app --reload
 ```
 
 ### Firmware (ESP32-WROOM)
@@ -43,10 +52,17 @@ idf.py build flash monitor
 
 ### Frontend Development
 
+No build step — vanilla JS + Tailwind via CDN.
+
+The frontend uses **absolute paths** (`/js/app.js`, `/manifest.json`), so it must be
+opened through the gateway at `http://localhost:8000/`. Opening `frontend/index.html`
+directly from the filesystem will not load correctly.
+
+### Tests
+
 ```bash
-cd frontend
-# No build step needed — vanilla JS + Tailwind via CDN
-# Open index.html directly or via gateway
+pip install -r gateway/requirements-dev.txt   # dev + test dependencies
+pytest tests -q                               # run the test suite
 ```
 
 ## Project Structure
@@ -61,11 +77,16 @@ ResQNet/
 └── tests/            # Backend + integration tests
 ```
 
+## Team Working Agreement
+
+See **[CLAUDE.md](CLAUDE.md)** for the branch workflow, project ground rules, and a
+running log of what has changed. Read it before your first commit.
+
 ## Documentation
 
 - [Architecture](docs/architecture.md) — Capability-based design
 - [API Spec](docs/api.md) — REST + WebSocket endpoints (TODO)
-- [SRS](docs/srs.md) — Software Requirements Specification (TODO)
+- SRS — Software Requirements Specification (not written yet)
 
 ## License
 

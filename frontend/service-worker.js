@@ -1,25 +1,31 @@
 // Service Worker for ResQNet PWA - Offline-first
 // 
 // TODO: Implement caching strategies:
-// - Cache app shell (HTML, CSS, JS) on install
 // - Cache-first for static assets
 // - Network-first for API requests with offline fallback
 // - Sync pending data when back online
+//
+// KNOWN GAP: Tailwind and Leaflet still load from a CDN in index.html, so the
+// app is NOT genuinely offline-capable yet. They must be vendored into
+// frontend/vendor/ before this can work in a real disaster zone.
 
 const CACHE_NAME = 'resqnet-v1';
+// App shell. SAME-ORIGIN FILES ONLY.
+// cache.addAll() is all-or-nothing: if a single entry 404s or is an opaque
+// cross-origin response, the whole install() rejects and the service worker
+// never activates - which silently kills offline mode. Do not add a path here
+// unless the file really exists in frontend/.
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
     '/manifest.json',
-    '/css/tailwind.css',
+    '/css/styles.css',
     '/js/app.js',
     '/js/dashboard/dashboard.js',
     '/js/sos/sos.js',
     '/js/missing-persons/missing-persons.js',
     '/js/volunteer/volunteer.js',
-    '/js/map/map.js',
-    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-    'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+    '/js/map/map.js'
 ];
 
 // Install event - cache app shell
