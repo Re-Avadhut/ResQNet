@@ -34,7 +34,7 @@ Node → Capability Descriptor (JSON) → Gateway → Database → PWA Dashboard
 
 ### Key Assumptions
 
-- **Python version**: 3.9+ supported; developed and tested on 3.13
+- **Python version**: 3.13
 - **ESP-IDF version**: 5.x (supports modern CMake and SDK)
 - **Raspberry Pi OS**: 64-bit Lite (for headless operation)
 - **Database**: SQLite 3.39+ with **synchronous** SQLAlchemy. `database.py` has an
@@ -73,4 +73,4 @@ Status as of 2026-09-04 (see CLAUDE.md for the running log):
 
 ---
 
-*Version 1.0 — Initial Scaffold*
+_Version 1.0 — Initial Scaffold_

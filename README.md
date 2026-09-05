@@ -84,7 +84,7 @@ ResQNet/
 ├── gateway/          # FastAPI backend
 ├── firmware/         # ESP-IDF firmware (C)
 ├── frontend/         # PWA (vanilla JS + Tailwind)
-├── docs/             # Architecture, API specs, SRS
+├── docs/             # Architecture and API specifications
 ├── scripts/          # Setup/deployment scripts
 └── tests/            # Backend + integration tests
 ```
@@ -98,7 +98,6 @@ running log of what has changed. Read it before your first commit.
 
 - [Architecture](docs/architecture.md) — Capability-based design
 - [API Spec](docs/api.md) — REST + WebSocket endpoints (TODO)
-- SRS — Software Requirements Specification (not written yet)
 
 ## License
 

@@ -15,30 +15,35 @@ These are non-negotiable. They override default behaviour and any general
 convention.
 
 ### R1 — Ask before acting
+
 Do not make changes, run destructive commands, install things, commit, push, or
-create/delete branches **without explicit permission from Sumanth.** Propose
+create/delete branches **without explicit permission from the project owner or
+designated team maintainer.** Propose
 first, wait for a yes, then act. Reading, searching, and explaining are always
 allowed without asking.
 
 ### R2 — Scope: CSE only
+
 Work is limited to the **software** side of the project:
 
-| ✅ In scope | ❌ Out of scope |
-| --- | --- |
-| `gateway/` — FastAPI backend, API, database | `firmware/` — ESP32 / ESP-IDF C code |
-| `frontend/` — PWA, UI, JavaScript, CSS | Hardware wiring, sensors, LoRa, GPS modules |
-| `tests/` — backend + integration tests | Anything ECE/electronics |
-| `docs/` — API specs, architecture | Board configuration, `sdkconfig` |
+| ✅ In scope                                 | ❌ Out of scope                             |
+| ------------------------------------------- | ------------------------------------------- |
+| `gateway/` — FastAPI backend, API, database | `firmware/` — ESP32 / ESP-IDF C code        |
+| `frontend/` — PWA, UI, JavaScript, CSS      | Hardware wiring, sensors, LoRa, GPS modules |
+| `tests/` — backend + integration tests      | Anything ECE/electronics                    |
+| `docs/` — API specs, architecture           | Board configuration, `sdkconfig`            |
 
 If something in `firmware/` genuinely blocks CSE work, **ask once**, explain why,
 and wait. Do not edit hardware code on your own initiative.
 
 ### R3 — Stay on the tech stack
+
 Do not introduce new frameworks, languages, or build tools. The stack is fixed
 (see [Section 2](#2-the-tech-stack-locked)). If something seems to need a new
 dependency, propose it and explain why the existing stack cannot do it.
 
 ### R4 — Assume no Git knowledge
+
 The team is new to Git and GitHub. Every Git operation must be explained in plain
 language before it runs — what it does, what it changes, and how to undo it.
 Never run a Git command that rewrites history or discards work
@@ -46,6 +51,7 @@ Never run a Git command that rewrites history or discards work
 specific permission for that exact command.
 
 ### R5 — Keep this file current
+
 Every meaningful change gets logged in [Section 7 — Change log](#7-change-log)
 so the whole team can follow what happened and why, without reading diffs.
 
@@ -53,18 +59,18 @@ so the whole team can follow what happened and why, without reading diffs.
 
 ## 2. The tech stack (locked)
 
-| Layer | Technology | Notes |
-| --- | --- | --- |
-| Backend | **Python 3.13** + **FastAPI** | Routes in `gateway/app/routes/` |
-| Database | **SQLAlchemy 2.0** + **SQLite** | Postgres is the future migration path |
-| Config | **pydantic-settings** | Reads `gateway/.env` |
-| Server | **uvicorn** | ASGI server |
-| Frontend | **Vanilla JavaScript** (ES modules) | No React, no Vue |
-| Styling | **TailwindCSS 3.4** (compiled) | Tokens in `tailwind.config.js`; see [Section 10](#10-styling-and-the-css-build) |
-| Maps | **Leaflet 1.9.4** (vendored) | `frontend/vendor/leaflet/` — never a CDN |
-| Offline | **Service Worker + PWA manifest** | `frontend/service-worker.js` |
-| Tests | **pytest** + **httpx** | `tests/` |
-| Firmware | ESP-IDF 5.x (C) | **Not our scope** — see R2 |
+| Layer    | Technology                          | Notes                                                                           |
+| -------- | ----------------------------------- | ------------------------------------------------------------------------------- |
+| Backend  | **Python 3.13** + **FastAPI**       | Routes in `gateway/app/routes/`                                                 |
+| Database | **SQLAlchemy 2.0** + **SQLite**     | Postgres is the future migration path                                           |
+| Config   | **pydantic-settings**               | Reads `gateway/.env`                                                            |
+| Server   | **uvicorn**                         | ASGI server                                                                     |
+| Frontend | **Vanilla JavaScript** (ES modules) | No React, no Vue                                                                |
+| Styling  | **TailwindCSS 3.4** (compiled)      | Tokens in `tailwind.config.js`; see [Section 10](#10-styling-and-the-css-build) |
+| Maps     | **Leaflet 1.9.4** (vendored)        | `frontend/vendor/leaflet/` — never a CDN                                        |
+| Offline  | **Service Worker + PWA manifest**   | `frontend/service-worker.js`                                                    |
+| Tests    | **pytest** + **httpx**              | `tests/`                                                                        |
+| Firmware | ESP-IDF 5.x (C)                     | **Not our scope** — see R2                                                      |
 
 ---
 
@@ -84,7 +90,7 @@ that and the dashboard is built from whatever the nodes actually report, instead
 of a fixed hardcoded list of features.
 
 **One process serves everything.** When you run the gateway it serves both the
-JSON API *and* the PWA on the same port. There is no separate frontend server.
+JSON API _and_ the PWA on the same port. There is no separate frontend server.
 
 - `http://localhost:8000/` → the PWA
 - `http://localhost:8000/api/v1/…` → the JSON API
@@ -109,16 +115,16 @@ order.
 
 ### The words
 
-| Word | What it actually means |
-| --- | --- |
-| **repository (repo)** | The project folder, plus its full history |
-| **commit** | A save point. A labelled snapshot of the project |
-| **branch** | A parallel copy of the project where you can work without affecting anyone else |
-| **`main`** | The official branch. Must always work |
-| **push** | Upload your commits to GitHub |
-| **pull** | Download other people's commits from GitHub |
-| **merge** | Combine one branch's work into another |
-| **fork** | A *whole separate copy of the repo* under a different GitHub account |
+| Word                  | What it actually means                                                          |
+| --------------------- | ------------------------------------------------------------------------------- |
+| **repository (repo)** | The project folder, plus its full history                                       |
+| **commit**            | A save point. A labelled snapshot of the project                                |
+| **branch**            | A parallel copy of the project where you can work without affecting anyone else |
+| **`main`**            | The official branch. Must always work                                           |
+| **push**              | Upload your commits to GitHub                                                   |
+| **pull**              | Download other people's commits from GitHub                                     |
+| **merge**             | Combine one branch's work into another                                          |
+| **fork**              | A _whole separate copy of the repo_ under a different GitHub account            |
 
 ### Branch vs fork — the thing to understand
 
@@ -185,7 +191,7 @@ recoverable mistake into a real one.
 
 ## 5. How to run the project
 
-Every command runs from the **repository root** (`ResQNet/`), *not* from inside
+Every command runs from the **repository root** (`ResQNet/`), _not_ from inside
 `gateway/`. This matters — the code imports itself as `gateway.app.…`, which only
 resolves from the root.
 
@@ -218,15 +224,15 @@ for the interactive API explorer.
 
 ### Important files
 
-| File | What it is |
-| --- | --- |
-| `gateway/app/main.py` | Starts the app, wires up routes, serves the PWA |
-| `gateway/app/routes/*.py` | The API endpoints — **most backend work happens here** |
-| `gateway/app/models/*.py` | Database table definitions |
-| `gateway/app/config.py` | Settings, read from `gateway/.env` |
-| `frontend/js/app.js` | Frontend routing + the `ApiClient` used to call the API |
-| `frontend/js/*/` | One folder per page (dashboard, sos, map, …) |
-| `docs/api.md` | **The API contract.** Build to match this document |
+| File                      | What it is                                              |
+| ------------------------- | ------------------------------------------------------- |
+| `gateway/app/main.py`     | Starts the app, wires up routes, serves the PWA         |
+| `gateway/app/routes/*.py` | The API endpoints — **most backend work happens here**  |
+| `gateway/app/models/*.py` | Database table definitions                              |
+| `gateway/app/config.py`   | Settings, read from `gateway/.env`                      |
+| `frontend/js/app.js`      | Frontend routing + the `ApiClient` used to call the API |
+| `frontend/js/*/`          | One folder per page (dashboard, sos, map, …)            |
+| `docs/api.md`             | **The API contract.** Build to match this document      |
 
 ### Things that will trip you up
 
@@ -253,18 +259,18 @@ new shape.
 
 ### What is real vs. what is a placeholder
 
-| Area | Status |
-| --- | --- |
-| Project structure | ✅ Complete |
-| App boots and serves API + PWA | ✅ Working |
-| Database schema (8 tables) | ✅ Defined and creates correctly |
-| Test suite runs | ✅ 11 tests pass |
-| API endpoint **logic** | ❌ All stubs — return fake empty data |
-| Database reads/writes from endpoints | ❌ Not connected at all |
-| Frontend pages | ✅ Built, wired to the API, degrade gracefully offline |
-| True offline capability | ✅ Zero external requests; verified in a real browser |
-| Offline submission queue | ✅ SOS reports survive being filed with no connection |
-| WebSocket `/ws/sync` | ❌ Accepts connections, does nothing |
+| Area                                 | Status                                                 |
+| ------------------------------------ | ------------------------------------------------------ |
+| Project structure                    | ✅ Complete                                            |
+| App boots and serves API + PWA       | ✅ Working                                             |
+| Database schema (8 tables)           | ✅ Defined and creates correctly                       |
+| Test suite runs                      | ✅ 11 tests pass                                       |
+| API endpoint **logic**               | ❌ All stubs — return fake empty data                  |
+| Database reads/writes from endpoints | ❌ Not connected at all                                |
+| Frontend pages                       | ✅ Built, wired to the API, degrade gracefully offline |
+| True offline capability              | ✅ Zero external requests; verified in a real browser  |
+| Offline submission queue             | ✅ SOS reports survive being filed with no connection  |
+| WebSocket `/ws/sync`                 | ❌ Accepts connections, does nothing                   |
 
 ---
 
@@ -277,17 +283,17 @@ Created branch **`dev`** off `main`. All changes below are on `dev`; `main` is u
 **The app could not start at all before this.** Three separate bugs each
 independently prevented it from running:
 
-| # | Problem | Fix |
-| --- | --- | --- |
-| 1 | `config.py` imported `pydantic_settings`, which was missing from `requirements.txt` and not installed. Instant `ModuleNotFoundError`. | Added `pydantic-settings>=2.0.0` to `gateway/requirements.txt` |
-| 2 | Four models declared a column literally named `metadata`. That name is **reserved** by SQLAlchemy — defining it raises `InvalidRequestError`. | Renamed the *Python* attribute to `extra_data` while keeping the *database* column named `metadata`, via `Column("metadata", JSON)`. This preserves the `"metadata"` field documented in `docs/api.md`. |
-| 3 | No `models/__init__.py`, and nothing imported the models. SQLAlchemy therefore knew about **zero** tables — `create_all()` would have silently created an empty database. | Added `gateway/app/models/__init__.py` importing all 8 models. This is also why bug #2 had never surfaced. |
+| #   | Problem                                                                                                                                                                   | Fix                                                                                                                                                                                                     |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `config.py` imported `pydantic_settings`, which was missing from `requirements.txt` and not installed. Instant `ModuleNotFoundError`.                                     | Added `pydantic-settings>=2.0.0` to `gateway/requirements.txt`                                                                                                                                          |
+| 2   | Four models declared a column literally named `metadata`. That name is **reserved** by SQLAlchemy — defining it raises `InvalidRequestError`.                             | Renamed the _Python_ attribute to `extra_data` while keeping the _database_ column named `metadata`, via `Column("metadata", JSON)`. This preserves the `"metadata"` field documented in `docs/api.md`. |
+| 3   | No `models/__init__.py`, and nothing imported the models. SQLAlchemy therefore knew about **zero** tables — `create_all()` would have silently created an empty database. | Added `gateway/app/models/__init__.py` importing all 8 models. This is also why bug #2 had never surfaced.                                                                                              |
 
 **Backend fixes**
 
 - `main.py` rewritten:
   - Added a `lifespan` handler so **database tables are actually created on startup**.
-  - **The PWA is now served by the gateway** via `StaticFiles`, which the README always claimed but the code never did. The mount is registered *last* so `/api/v1/*` still takes priority.
+  - **The PWA is now served by the gateway** via `StaticFiles`, which the README always claimed but the code never did. The mount is registered _last_ so `/api/v1/*` still takes priority.
   - Added a `__main__` block so `python -m gateway.app.main` genuinely starts the server. Previously that command started nothing.
   - Fixed CORS: `allow_credentials` was `True` alongside `allow_origins=["*"]`, a combination browsers reject outright. Also removed `"WS"` from `allow_methods` — it is not an HTTP method — and added the missing `PUT`/`DELETE`.
 - `node.py`: `server_default="CURRENT_TIMESTAMP"` was a plain string, which SQLAlchemy would have written as a literal quoted value rather than SQL. Now `text("CURRENT_TIMESTAMP")`.
@@ -328,7 +334,7 @@ rendered as unstyled text with no map.
 - Leaflet 1.9.4 vendored into `frontend/vendor/leaflet/` — including the marker
   images, which are the part people forget and which break every map pin.
 - Tailwind is now **compiled** rather than loaded from the CDN. The CDN build is
-  a ~400KB script that compiles CSS *in the browser on every page load*; the
+  a ~400KB script that compiles CSS _in the browser on every page load_; the
   compiled stylesheet is **22KB**. See [Section 10](#10-styling-and-the-css-build).
 - Chose Tailwind **v3, not v4**, on purpose: v4 requires Chrome 111+ / Safari
   16.4+. This app has to run on whatever cheap phone shows up in a disaster zone.
@@ -344,7 +350,7 @@ rendered as unstyled text with no map.
   `addAll()`, so one missing file can no longer kill offline support outright.
 - **Outbox:** an SOS filed with no connection is stored on the device and sent
   automatically when the gateway comes back. Nothing typed is ever lost.
-- Added `GET /api/v1/health` so the app can tell that the *gateway* is down.
+- Added `GET /api/v1/health` so the app can tell that the _gateway_ is down.
   `navigator.onLine` only reports whether the device has a network at all — a
   phone joined to the node's Wi-Fi with the Pi switched off still reports
   "online".
@@ -375,25 +381,25 @@ rendered as unstyled text with no map.
 
 **Verified end to end in a real browser (Playwright)**
 
-| Check | Result |
-| --- | --- |
-| External network requests | none |
-| Console errors | none |
-| Reload with the gateway killed | app still loads and renders |
-| Offline SOS submission | queued on device, not lost |
-| Reconnect | queue flushed automatically |
-| Map markers, popups, layer toggles | working |
-| Backend tests | 13 passing |
+| Check                              | Result                      |
+| ---------------------------------- | --------------------------- |
+| External network requests          | none                        |
+| Console errors                     | none                        |
+| Reload with the gateway killed     | app still loads and renders |
+| Offline SOS submission             | queued on device, not lost  |
+| Reconnect                          | queue flushed automatically |
+| Map markers, popups, layer toggles | working                     |
+| Backend tests                      | 13 passing                  |
 
 Also fixed: the map's zoom controls stayed light-themed because `leaflet.css` is
-loaded lazily and therefore landed *after* our stylesheet, winning on source
+loaded lazily and therefore landed _after_ our stylesheet, winning on source
 order. The dark overrides are now scoped to raise their specificity.
 
 ---
 
 ## 8. Known issues not yet fixed
 
-### Needs a decision from Sumanth
+### Needs a decision from the project owner or designated team maintainer
 
 1. **Offline map imagery.** The map has no raster tiles. Bulk-downloading them
    from the public OpenStreetMap servers is forbidden by their tile usage policy,
@@ -422,7 +428,7 @@ order. The dark overrides are now scoped to raise their specificity.
 8. `docs/architecture.md` claims a `gateway/app/websocket/` directory exists. It
    does not — the WebSocket handler lives in `main.py`.
 9. Tests only assert the shape of stub responses. They will need real assertions
-    as endpoints get implemented.
+   as endpoints get implemented.
 
 ---
 
@@ -525,18 +531,18 @@ accordingly.
 
 ### What must never enter Git
 
-`.gitignore` covers all of this, but know *why*:
+`.gitignore` covers all of this, but know _why_:
 
-| Never commit | Why |
-| --- | --- |
-| `gateway/.env` | Real config and secrets. Everyone makes their own from `.env.example`. |
-| `*.db`, `*.sqlite`, `*.sql`, `backups/` | The database holds victim data once in use. |
-| `uploads/` | Photographs of people. |
-| `*.pem`, `*.key`, `*.crt`, `id_rsa*` | Private keys and certificates. |
-| `frontend/assets/tiles/` | Not secret, but tile packs run to gigabytes. |
+| Never commit                            | Why                                                                    |
+| --------------------------------------- | ---------------------------------------------------------------------- |
+| `gateway/.env`                          | Real config and secrets. Everyone makes their own from `.env.example`. |
+| `*.db`, `*.sqlite`, `*.sql`, `backups/` | The database holds victim data once in use.                            |
+| `uploads/`                              | Photographs of people.                                                 |
+| `*.pem`, `*.key`, `*.crt`, `id_rsa*`    | Private keys and certificates.                                         |
+| `frontend/assets/tiles/`                | Not secret, but tile packs run to gigabytes.                           |
 
 **If you ever commit a secret by accident, say so immediately.** Deleting it in
-a later commit does *not* remove it — it stays in the history forever, and the
+a later commit does _not_ remove it — it stays in the history forever, and the
 fix is to rotate the secret. Speed matters more than embarrassment.
 
 Verified on 2026-09-04: `.env` has never been committed in any commit on any
@@ -544,17 +550,17 @@ branch, and nothing sensitive is currently tracked.
 
 ### Known posture (all deliberate for now)
 
-| Item | State | Before real deployment |
-| --- | --- | --- |
-| Authentication | None at all | Decide who may file and read reports |
-| `SECRET_KEY` | Public placeholder; app warns at startup | Set a real value in `gateway/.env` |
-| CORS | `allow_origins=["*"]` | Restrict to the gateway's own origin |
-| Transport | Plain HTTP | Fine on an isolated LAN; not over the internet |
-| `/docs` | Publicly readable | Fine on a field LAN; disable if exposed |
-| Uploads | Not implemented | Validate type and size; never trust a filename |
+| Item           | State                                    | Before real deployment                         |
+| -------------- | ---------------------------------------- | ---------------------------------------------- |
+| Authentication | None at all                              | Decide who may file and read reports           |
+| `SECRET_KEY`   | Public placeholder; app warns at startup | Set a real value in `gateway/.env`             |
+| CORS           | `allow_origins=["*"]`                    | Restrict to the gateway's own origin           |
+| Transport      | Plain HTTP                               | Fine on an isolated LAN; not over the internet |
+| `/docs`        | Publicly readable                        | Fine on a field LAN; disable if exposed        |
+| Uploads        | Not implemented                          | Validate type and size; never trust a filename |
 
 None of these are bugs — `docs/api.md` states the no-auth decision explicitly.
-They are listed so the choice stays *conscious* rather than forgotten.
+They are listed so the choice stays _conscious_ rather than forgotten.
 
 ### Personal data on the device
 
