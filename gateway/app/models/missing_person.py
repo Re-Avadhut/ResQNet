@@ -25,7 +25,7 @@ class MissingPerson(Base):
     status = Column(String(20), default="missing")  # missing, found, deceased
     reported_at = Column(DateTime, default=datetime.datetime.utcnow)
     found_at = Column(DateTime, nullable=True)
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column("metadata", JSON, nullable=True)
 
     def __repr__(self):
         return f"<MissingPerson(name={self.name}, status={self.status})>"

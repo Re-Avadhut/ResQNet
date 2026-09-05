@@ -2,7 +2,9 @@
 
 import os
 from functools import lru_cache
-from pydantic_settings import BaseSettings
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -27,9 +29,11 @@ class Settings(BaseSettings):
     gps_provider: str = "mock"
     sensor_aggregation_url: str = "http://localhost:8080"
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).resolve().parents[1] / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 
 @lru_cache()

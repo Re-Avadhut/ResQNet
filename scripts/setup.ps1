@@ -28,4 +28,4 @@ if (-not (Test-Path -LiteralPath "gateway\.env")) {
 }
 
 Write-Host "=== Setup Complete ===" -ForegroundColor Green
-Write-Host "Run with: cd gateway; python -m app.main"
+Write-Host "Run from the repository root with: python -m uvicorn gateway.app.main:app --reload"

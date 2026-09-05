@@ -17,13 +17,16 @@ class SOSReport(Base):
     reporter_contact = Column(String(50), nullable=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
-    severity = Column(String(20), default="medium")  # low, medium, high, critical
-    status = Column(String(20), default="active")  # active, acknowledged, resolved
+    # low, medium, high, critical
+    severity = Column(String(20), default="medium")
+    # active, acknowledged, resolved
+    status = Column(String(20), default="active")
     description = Column(String(500), nullable=True)
     photo_url = Column(String(255), nullable=True)  # Path to uploaded photo
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     resolved_at = Column(DateTime, nullable=True)
-    metadata = Column(JSON, nullable=True)  # Additional context
+    extra_metadata = Column(
+        "metadata", JSON, nullable=True)  # Additional context
 
     # Relationships
     node = relationship("Node", back_populates="sos_reports")
