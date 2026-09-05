@@ -1,7 +1,0 @@
-# ResQNet Gateway - development / testing dependencies
-# Install from the repository root:  pip install -r gateway/requirements-dev.txt
-
--r requirements.txt
-
-pytest>=8.0.0
-httpx>=0.27.0

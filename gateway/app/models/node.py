@@ -1,6 +1,6 @@
 """Node ORM model."""
 
-from sqlalchemy import Column, String, DateTime, Boolean, Integer, text
+from sqlalchemy import Column, String, DateTime, Boolean, Integer
 from sqlalchemy.orm import relationship
 from gateway.app.database import Base
 
@@ -19,7 +19,7 @@ class Node(Base):
     battery_level = Column(Integer, nullable=True)  # 0-100
     signal_strength = Column(Integer, nullable=True)  # RSSI
     protocol_version = Column(String(10), default="1.0")
-    created_at = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
+    created_at = Column(DateTime, server_default="CURRENT_TIMESTAMP")
 
     # Relationships
     capabilities = relationship("Capability", back_populates="node")

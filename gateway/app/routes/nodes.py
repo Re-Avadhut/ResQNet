@@ -40,7 +40,6 @@ async def get_node(node_id: str):
     return {"node_id": node_id, "status": "not_found"}
 
 
-@router.get("", include_in_schema=False)
 @router.get("/")
 async def list_nodes():
     """List all registered nodes.

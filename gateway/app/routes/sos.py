@@ -27,7 +27,6 @@ async def create_sos(sos: SOSCreate):
     return {"status": "created", "id": 0}
 
 
-@router.get("", include_in_schema=False)
 @router.get("/")
 async def list_sos(status: str | None = None):
     """List SOS reports, optionally filtered by status.

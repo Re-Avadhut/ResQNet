@@ -22,7 +22,7 @@ class ResourceRequest(Base):
     requested_at = Column(DateTime, default=datetime.datetime.utcnow)
     delivered_at = Column(DateTime, nullable=True)
     notes = Column(String(500), nullable=True)
-    extra_data = Column("metadata", JSON, nullable=True)
+    metadata = Column(JSON, nullable=True)
 
     def __repr__(self):
         return f"<ResourceRequest(type={self.resource_type}, urgency={self.urgency})>"

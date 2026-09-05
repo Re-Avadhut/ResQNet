@@ -5,9 +5,8 @@ from fastapi.testclient import TestClient
 import sys
 from pathlib import Path
 
-# Add the REPOSITORY ROOT to sys.path so `import gateway.app...` resolves
-# no matter which directory pytest was launched from.
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# Add gateway to path
+sys.path.insert(0, str(Path(__file__).parent.parent / "gateway"))
 
 from gateway.app.main import app
 
