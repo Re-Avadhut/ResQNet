@@ -14,7 +14,8 @@ class Capability(Base):
     node_id = Column(Integer, ForeignKey("nodes.id"), nullable=False)
     module = Column(String(50), nullable=False)  # e.g., "GPS", "Camera"
     capabilities = Column(JSON, nullable=False)  # List of capabilities
-    metadata = Column(JSON, nullable=True)  # Additional module metadata
+    # Additional module metadata
+    extra_metadata = Column("metadata", JSON, nullable=True)
 
     # Relationships
     node = relationship("Node", back_populates="capabilities")

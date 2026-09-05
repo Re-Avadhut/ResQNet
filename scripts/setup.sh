@@ -19,10 +19,10 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-# Create virtual environment
+# Create the development environment beside the gateway package.
 echo "Creating virtual environment..."
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv gateway/venv
+source gateway/venv/bin/activate
 
 # Install dependencies
 echo "Installing Python packages..."
@@ -42,4 +42,4 @@ echo "Initializing database..."
 # TODO: Run database migrations
 
 echo "=== Setup Complete ==="
-echo "Run with: cd gateway && python -m app.main"
+echo "Run from the repository root with: python -m uvicorn gateway.app.main:app --reload"
