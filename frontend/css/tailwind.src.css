@@ -1,0 +1,176 @@
+/* ResQNet — Tailwind source file.
+ *
+ * DO NOT EDIT frontend/css/tailwind.css BY HAND. It is generated from this
+ * file. Edit this, then run:  npm run build:css
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* Stop iOS Safari zooming when a form field is focused. */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans text-body antialiased;
+    /* Fill the viewport even when content is short, so the dark canvas does
+       not stop halfway down the page. */
+    min-height: 100vh;
+  }
+
+  /* Visible focus ring for keyboard users. Never remove this: gloved hands and
+     stylus input in the field rely on obvious focus targets. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent-500 ring-offset-2 ring-offset-canvas;
+  }
+
+  ::selection {
+    @apply bg-accent-500/30;
+  }
+
+  /* Numeric readouts should not shift width as values change. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* ---- Surfaces ---------------------------------------------------- */
+
+  .panel {
+    @apply bg-surface-1 border border-hairline rounded-lg;
+  }
+
+  .panel-hover {
+    @apply transition-colors duration-200 ease-out hover:border-hairline-strong hover:bg-surface-2;
+  }
+
+  /* ---- Buttons ------------------------------------------------------ */
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2
+           text-body-sm font-medium transition-colors duration-150 ease-out
+           disabled:opacity-50 disabled:pointer-events-none;
+    /* 44px minimum touch target (Apple HIG / WCAG 2.5.5). This app is used
+       one-handed, in the rain, possibly with gloves on. */
+    min-height: 44px;
+  }
+
+  .btn-primary {
+    @apply btn bg-accent-500 text-white hover:bg-accent-400 active:bg-accent-600;
+  }
+
+  .btn-emergency {
+    @apply btn bg-emergency-500 text-white hover:bg-emergency-400 active:bg-emergency-600;
+  }
+
+  .btn-secondary {
+    @apply btn bg-surface-2 text-ink border border-hairline
+           hover:bg-surface-3 hover:border-hairline-strong;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-ink-muted hover:bg-surface-2 hover:text-ink;
+  }
+
+  /* ---- Forms -------------------------------------------------------- */
+
+  .field-label {
+    @apply block text-body-sm font-medium text-ink-muted mb-2;
+  }
+
+  .field {
+    @apply w-full bg-surface-2 border border-hairline rounded-md px-3 py-2
+           text-ink placeholder:text-ink-subtle
+           transition-colors duration-150 ease-out
+           hover:border-hairline-strong focus:border-accent-500;
+    /* 16px minimum, otherwise iOS Safari zooms the viewport on focus. */
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  select.field {
+    /* Native arrow is invisible on a dark background in some browsers. */
+    @apply appearance-none bg-no-repeat pr-10;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236f7783' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 12px center;
+  }
+
+  textarea.field {
+    min-height: 96px;
+    @apply py-2 resize-y;
+  }
+
+  /* ---- Status pills -------------------------------------------------- */
+
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
+           text-caption font-medium border;
+  }
+
+  .pill-emergency { @apply pill bg-emergency-500/10 text-emergency-400 border-emergency-500/30; }
+  .pill-warning   { @apply pill bg-warning-500/10   text-warning-400   border-warning-500/30; }
+  .pill-rescue    { @apply pill bg-rescue-500/10    text-rescue-400    border-rescue-500/30; }
+  .pill-info      { @apply pill bg-info-500/10      text-info-400      border-info-500/30; }
+  .pill-neutral   { @apply pill bg-surface-3        text-ink-subtle    border-hairline; }
+
+  /* ---- Navigation ---------------------------------------------------- */
+
+  .nav-link {
+    @apply inline-flex items-center whitespace-nowrap px-3 py-3
+           text-body-sm font-medium text-ink-subtle
+           border-b-2 border-transparent
+           transition-colors duration-150 ease-out
+           hover:text-ink;
+    min-height: 44px;
+  }
+
+  .nav-link[aria-current='page'] {
+    @apply text-ink border-accent-500;
+  }
+
+  /* Keyboard-only escape hatch past the nav. Off-screen until focused. */
+  .skip-link {
+    @apply absolute left-4 -top-20 z-50 rounded-md bg-accent-500 px-4 py-2
+           text-body-sm font-medium text-white transition-all duration-150;
+  }
+
+  .skip-link:focus {
+    @apply top-4;
+  }
+
+  /* ---- Misc ---------------------------------------------------------- */
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .eyebrow {
+    @apply text-eyebrow uppercase text-ink-subtle;
+  }
+
+  .skeleton {
+    @apply bg-surface-3 rounded animate-pulse;
+  }
+}
+
+/* Users who have asked their device to reduce motion get no animation. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

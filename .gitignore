@@ -24,13 +24,17 @@ htmlcov/
 
 # Node / Frontend build artifacts
 node_modules/
-package-lock.json
 yarn.lock
+# NOTE: package-lock.json IS committed. It pins the exact Tailwind version so
+# everyone's `npm run build:css` produces identical CSS.
 *.min.js
 *.min.css
 
 # Tailwind
-frontend/css/tailwind.css
+# NOTE: frontend/css/tailwind.css is deliberately COMMITTED, not ignored.
+# It is the compiled stylesheet the app actually loads. Committing it means a
+# teammate can clone and run the app without installing Node at all - the
+# build is only needed when you add new Tailwind classes.
 frontend/css/output.css
 
 # ESP-IDF
@@ -51,17 +55,45 @@ Thumbs.db
 *.log
 
 # Env / Secrets
+# NEVER commit any of these. If you are about to add a file containing a real
+# password, API key, certificate or private key, it belongs here first.
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 *.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*.keystore
+credentials.json
+service-account*.json
 secrets/
+.secrets/
 
-# Database
+# Database - contains real victim data (names, contacts, GPS positions) once
+# the app is in use. Never commit it, and treat any copy or backup as sensitive.
 *.db
 *.sqlite
 *.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+*.sql
+*.dump
+backups/
+
+# Offline map tile packs. These are generated per deployment and are routinely
+# hundreds of megabytes to gigabytes. Ship them to the Pi directly; do not put
+# them in Git. See CLAUDE.md section 11.
+frontend/assets/tiles/
+*.mbtiles
+
 
 # Uploads / runtime data
+# uploads/ will hold photographs of people (SOS reports, missing persons).
+# That is personal data - it stays on the gateway, never in Git.
 uploads/
 runtime/

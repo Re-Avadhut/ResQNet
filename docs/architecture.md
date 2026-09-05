@@ -34,10 +34,12 @@ Node → Capability Descriptor (JSON) → Gateway → Database → PWA Dashboard
 
 ### Key Assumptions
 
-- **Python version**: 3.9+ (FastAPI 0.100+, SQLAlchemy 2.0+)
+- **Python version**: 3.13
 - **ESP-IDF version**: 5.x (supports modern CMake and SDK)
 - **Raspberry Pi OS**: 64-bit Lite (for headless operation)
-- **Database**: SQLite 3.39+ with async SQLAlchemy (dialect-swappable)
+- **Database**: SQLite 3.39+ with **synchronous** SQLAlchemy. `database.py` has an
+  async branch for PostgreSQL, but it currently raises `NotImplementedError` -
+  async is a migration path, not the current state.
 - **Frontend**: Vanilla JS, no heavy frameworks (React/Vue)
 - **Deployment**: Docker not assumed initially; direct binary execution
 
@@ -45,7 +47,8 @@ Node → Capability Descriptor (JSON) → Gateway → Database → PWA Dashboard
 
 - `gateway/app/models/` — SQLAlchemy ORM models (Node, Capability, Message, SOSReport, MissingPerson, Volunteer, ResourceRequest, DeploymentLocation)
 - `gateway/app/routes/` — REST endpoints for node management, capability sync, SOS reporting, messaging, dashboard data
-- `gateway/app/websocket/` — Heartbeat and sync WebSocket handler
+- `gateway/app/main.py` — App setup, static PWA hosting, health check, and the
+  `/ws/sync` WebSocket handler (there is no separate `websocket/` package)
 - `firmware/main/` — ESP-IDF project skeleton with capability descriptor generation
 - `frontend/` — PWA structure with dashboard, SOS form, missing-persons, volunteer registry, map views
 - `docs/architecture.md` — This document
@@ -54,13 +57,20 @@ Node → Capability Descriptor (JSON) → Gateway → Database → PWA Dashboard
 
 ### Next Steps
 
-1. Implement FastAPI endpoints in `gateway/app/routes/`
-2. Define SQLAlchemy models in `gateway/app/models/`
-3. Create ESP-IDF project skeleton in `firmware/`
-4. Build PWA frontend in `frontend/`
-5. Add CI/CD and deployment scripts in `scripts/`
-6. Write API specifications in `docs/`
+Status as of 2026-09-04 (see CLAUDE.md for the running log):
+
+1. ~~Define SQLAlchemy models~~ - done, 8 models in `gateway/app/models/`
+2. ~~Create ESP-IDF project skeleton~~ - done (hardware team owns it from here)
+3. ~~Build PWA frontend~~ - done and fully offline-capable
+4. ~~Write API specifications~~ - done, `docs/api.md`
+5. **Implement the endpoints in `gateway/app/routes/`** - NOT started. Every
+   route is still a stub returning hardcoded empty data. This is the critical path.
+6. **Add route modules for the four models that have none**: MissingPerson,
+   Volunteer, ResourceRequest, DeploymentLocation. These are not in `docs/api.md`
+   either, so the spec needs extending first.
+7. Implement the `/ws/sync` WebSocket message handling described in `docs/api.md`
+8. Add CI and finish the deployment scripts
 
 ---
 
-*Version 1.0 — Initial Scaffold*
+_Version 1.0 — Initial Scaffold_

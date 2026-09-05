@@ -21,3 +21,15 @@ def test_get_node(client):
     response = client.get("/api/v1/nodes/TEST-NODE-01")
     assert response.status_code == 200
     assert "node_id" in response.json()
+
+def test_list_nodes_without_trailing_slash(client):
+    """Both /nodes and /nodes/ must work.
+
+    The PWA is mounted at "/" as a catch-all, so it swallows API paths that do
+    not match a route exactly — including the trailing-slash redirect FastAPI
+    would normally issue. Without an explicit "" route, the URL written in
+    docs/api.md (`GET /nodes`) returns 404. This test guards that.
+    """
+    response = client.get("/api/v1/nodes")
+    assert response.status_code == 200
+    assert "nodes" in response.json()

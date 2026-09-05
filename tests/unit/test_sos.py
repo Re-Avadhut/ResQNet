@@ -20,3 +20,9 @@ def test_get_sos(client):
     response = client.get("/api/v1/sos/1")
     assert response.status_code == 200
     assert "id" in response.json()
+
+def test_list_sos_without_trailing_slash(client):
+    """`GET /sos` (the URL in docs/api.md) must not 404. See test_nodes.py."""
+    response = client.get("/api/v1/sos")
+    assert response.status_code == 200
+    assert "reports" in response.json()

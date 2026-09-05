@@ -18,19 +18,28 @@ An offline-first emergency communication system for disaster zones, built on Ras
 
 - **Gateway**: FastAPI + SQLite, hosts offline PWA
 - **Firmware**: ESP-IDF (C), Wi-Fi captive portal + dynamic capability descriptor
-- **Frontend**: HTML5 + TailwindCSS + vanilla JS PWA (served by gateway)
+- **Frontend**: Vanilla JS PWA, compiled Tailwind, vendored Leaflet — zero CDNs, fully offline
 - **Capability-based**: Gateway builds dashboard from whatever capabilities nodes report
 
 ## Quick Start
 
 ### Gateway (Raspberry Pi 4)
 
+Run every command from the **repository root**, not from inside `gateway/`:
+
 ```bash
-cd gateway
-cp .env.example .env
-pip install -r requirements.txt
-python -m app.main
-# Serves on http://localhost:8000 (API) and PWA at /
+cp gateway/.env.example gateway/.env
+pip install -r gateway/requirements.txt
+python -m gateway.app.main
+# API  -> http://localhost:8000/api/v1
+# PWA  -> http://localhost:8000/
+# Docs -> http://localhost:8000/docs
+```
+
+For development with auto-reload:
+
+```bash
+uvicorn gateway.app.main:app --reload
 ```
 
 ### Firmware (ESP32-WROOM)
@@ -43,10 +52,29 @@ idf.py build flash monitor
 
 ### Frontend Development
 
+**Fully offline — there are no CDN dependencies.** Tailwind is compiled to a
+committed stylesheet and Leaflet is vendored into `frontend/vendor/`, so the app
+works with no internet at all.
+
+The frontend uses **absolute paths** (`/js/app.js`, `/manifest.json`), so it must be
+opened through the gateway at `http://localhost:8000/`. Opening `frontend/index.html`
+directly from the filesystem will not load correctly.
+
+You do **not** need Node to run the app. It is required only to rebuild the CSS
+after adding new Tailwind classes:
+
 ```bash
-cd frontend
-# No build step needed — vanilla JS + Tailwind via CDN
-# Open index.html directly or via gateway
+npm install
+npm run build:css     # or: npm run watch:css
+```
+
+See [CLAUDE.md § 10](CLAUDE.md) for the styling rules.
+
+### Tests
+
+```bash
+pip install -r gateway/requirements-dev.txt   # dev + test dependencies
+pytest tests -q                               # run the test suite
 ```
 
 ## Project Structure
@@ -56,16 +84,20 @@ ResQNet/
 ├── gateway/          # FastAPI backend
 ├── firmware/         # ESP-IDF firmware (C)
 ├── frontend/         # PWA (vanilla JS + Tailwind)
-├── docs/             # Architecture, API specs, SRS
+├── docs/             # Architecture and API specifications
 ├── scripts/          # Setup/deployment scripts
 └── tests/            # Backend + integration tests
 ```
+
+## Team Working Agreement
+
+See **[CLAUDE.md](CLAUDE.md)** for the branch workflow, project ground rules, and a
+running log of what has changed. Read it before your first commit.
 
 ## Documentation
 
 - [Architecture](docs/architecture.md) — Capability-based design
 - [API Spec](docs/api.md) — REST + WebSocket endpoints (TODO)
-- [SRS](docs/srs.md) — Software Requirements Specification (TODO)
 
 ## License
 
